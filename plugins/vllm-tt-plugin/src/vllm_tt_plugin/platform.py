@@ -401,6 +401,13 @@ def register_tt_models(register_test_models=False) -> None:
 
     _register_model_if_missing(ModelRegistry, "TTQwen3ForCausalLM", path_qwen3_text)
 
+    # Muse-Glimmer-30B - Text (LM-only serving path; multimodal inputs rejected)
+    _register_model_if_missing(
+        ModelRegistry,
+        "TTMuseGlimmerForConditionalGeneration",
+        "models.demos.muse_glimmer.tt.generator_vllm:MuseGlimmerForConditionalGeneration",
+    )
+
     # Qwen3.5 - Text
     _register_model_if_missing(
         ModelRegistry,
