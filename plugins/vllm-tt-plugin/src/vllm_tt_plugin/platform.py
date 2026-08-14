@@ -401,12 +401,21 @@ def register_tt_models(register_test_models=False) -> None:
 
     _register_model_if_missing(ModelRegistry, "TTQwen3ForCausalLM", path_qwen3_text)
 
-    # Muse-Glimmer-30B - Text (LM-only serving path; multimodal inputs rejected)
-    _register_model_if_missing(
-        ModelRegistry,
+    # Muse-Glimmer-30B — text-only TT bridge (LM-only serving; mm inputs rejected).
+    #
+    # Muse's config declares architectures ['MuseGlimmerForConditionalGeneration']
+    # with model_type 'muse_glimmer' and nested text/vision configs. Like Gemma4
+    # above, without the plain HF arch registered, vLLM's resolver falls back to
+    # TransformersMultiModalForCausalLM (nested hf_config != hf_text_config) and
+    # crashes on the multimodal _processor_factory assertion before the TT-prefix
+    # logic runs. Registering the plain arch (and its TT alias) to our text-only
+    # class keeps supports_multimodal False and the request path text-only.
+    _muse_target = "models.demos.muse_glimmer.tt.generator_vllm:MuseGlimmerForConditionalGeneration"
+    for arch in (
+        "MuseGlimmerForConditionalGeneration",
         "TTMuseGlimmerForConditionalGeneration",
-        "models.demos.muse_glimmer.tt.generator_vllm:MuseGlimmerForConditionalGeneration",
-    )
+    ):
+        _register_model_if_missing(ModelRegistry, arch, _muse_target)
 
     # Qwen3.5 - Text
     _register_model_if_missing(
